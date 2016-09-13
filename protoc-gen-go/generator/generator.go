@@ -1784,8 +1784,20 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		ns := allocNames(base, "Get"+base)
 		fieldName, fieldGetterName := ns[0], ns[1]
 		typename, wiretype := g.GoType(message, field)
-		jsonName := *field.Name
-		tag := fmt.Sprintf("protobuf:%s json:%q", g.goTag(message, field, wiretype), jsonName+",omitempty")
+
+		//do not include omitempty in json field tag if the
+		// command line parameter is false
+		var omitEmpty string
+
+		if g.Param["omitempty"] == "false" {
+			omitEmpty = ","
+		} else {
+			omitEmpty = ",omitempty"
+		}
+
+		jsonName := *field.Name + omitEmpty
+
+		tag := fmt.Sprintf("protobuf:%s json:%q", g.goTag(message, field, wiretype), jsonName)
 
 		fieldNames[field] = fieldName
 		fieldGetterNames[field] = fieldGetterName
